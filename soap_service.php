@@ -6,11 +6,11 @@
 
     class WatershetUstreamWebService {
 
-        private $app_url = "http://www.alosrhmc.com/";
+        private $app_url = "APP_URL";
 
         public function validateBroadcasterSession($brandId, $channelCode, $sessionId) {
             syslog(LOG_DEBUG, "Validate Broadcaster Session: ${brandId} | ${channelCode} | ${sessionId}");
-            $response = rest_helper($this->app_url . "admin/broadcaster/validate/${brandId}/${channelCode}/${sessionId}.json");
+            $response = rest_helper($this->app_url . "/validate_broadcaster/${brandId}/${channelCode}/${sessionId}.json");
 
             if ($response->authStatus == 1) {
                 return new SoapParam(true, 'authStatus');
@@ -50,7 +50,7 @@
                 'changedAt' => $changedAt,
                 'status' => $status
             );
-            $response = do_post_request($this->app_url . "admin/channels/update_status.json", $params);
+            $response = do_post_request($this->app_url . "/channel_status/update.json", $params);
 
             if ($response->acknowledged == 1) {
                 return new SoapParam(true, 'acknowledged');
@@ -62,7 +62,7 @@
         public function validateViewerSession($brandId, $channelCode, $sessionId) {
             sys_log(LOG_DEBUG, "Validate user session: ${sessionId} | ${channelCode}");
 
-            $response = rest_helper($this->app_url . "lectures/validate/${brandId}/${channelCode}/${sessionId}.json");
+            $response = rest_helper($this->app_url . "/validate_lecture/${brandId}/${channelCode}/${sessionId}.json");
 
             if ($response->authStatus == 1) {
                 return new SoapParam(true, 'authStatus');
@@ -71,24 +71,6 @@
             }
         }
 
-        public function notifyRecordingStarted($brandId, $channelCode, $startedAt) {
-            syslog(LOG_DEBUG, "Recording started: ${brandId} | ${channelCode} | ${startedAt}");
-            # POST
-            $params = array(
-                'brandId' => $brandId,
-                'channelCode' => $channelCode,
-                'startedAt' => $startedAt
-            );
-//            $response = rest_helper($this->app_url . "admin/channels/update_status.json", $params, 'POST');
-            $response = new stdClass();
-            $response->acknowledged = 1;
-
-            if ($response->acknowledged == 1) {
-                return new SoapParam(true, 'acknowledged');
-            } else {
-                return new SoapParam(false, 'acknowledged');
-            }
-        }
 
         public function notifyRecordingCompleted($brandId, $channelCode, $videoId, $createdAt, $videoAttributes) {
             syslog(LOG_DEBUG, "Recording Completed: ${brandId} | ${channelCode} | ${videoId}  | ${createdAt}");
@@ -108,7 +90,7 @@
                 'createdAt' => $createdAt,
                 'videoAttributes' => $videoAttributes
             );
-            $response = do_post_request($this->app_url . "admin/lectures/create_recorded_lecture.json", $params);
+            $response = do_post_request($this->app_url . "/lecture/create.json", $params);
 
             if ($response->acknowledged == 1) {
                 return new SoapParam(true, 'acknowledged');
@@ -117,18 +99,12 @@
             }
         }
 
-        public function checkStreamUserTimeLimit($brandId, $channelCode, $sessionId) {
-            return array(
-                60, #userTimeLeft
-                true); #shouldCheckAgain
-        }
-
     }
 
     ini_set("soap.wsdl_cache_enabled", "0");
 
-    $uri = "http://www.alosrhmc.com:81/webservice/soap_service.php";
-    $wsdl = "http://localhost:81/webservice/webservice.xml";
+    $uri = "WEB_SERVICE_URI";
+    $wsdl = "";
     $server = new SoapServer(null, array(
                 'uri' => $uri,
                 'location' => $uri,
